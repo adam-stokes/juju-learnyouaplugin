@@ -7,12 +7,14 @@ import (
 	"github.com/juju/juju/juju"
 	"github.com/juju/juju/juju/osenv"
 	"github.com/juju/juju/cmd/envcmd"
+	"github.com/juju/juju/state"
 
 	_ "github.com/juju/juju/provider/all"
 )
 
 type LYAPluginCommand struct {
 	envcmd.EnvCommandBase
+	MachineMap map[string]*state.Machine
 }
 
 func (c *LYAPluginCommand) Info(envName string) error {
@@ -21,8 +23,15 @@ func (c *LYAPluginCommand) Info(envName string) error {
 		panic(err)
 	}
 	defer client.Close()
-	info, err := client.EnvironmentInfo()
-	fmt.Printf("Connection (%s): (%s)\n", info.UUID, info.Name)
+	c.MachineMap = make(map[string]*state.Machine)
+
+	status, err := client.Status([]string{})
+	if err != nil {
+		panic(err)
+	}
+	for _, m := range status.Machines {
+		fmt.Printf("Found machine (%s)", m.Id)
+	}
 	return nil
 }
 
