@@ -5,7 +5,6 @@ package main
 import (
 	"fmt"
 	"github.com/juju/juju/juju"
-	"github.com/juju/juju/state"
 	"github.com/juju/juju/juju/osenv"
 	"github.com/juju/juju/cmd/envcmd"
 
@@ -14,11 +13,10 @@ import (
 
 type LYAPluginCommand struct {
 	envcmd.EnvCommandBase
-	MachineMap map[string]*state.Machine
 }
 
-func (c *LYAPluginCommand) Info() error {
-	client, err := juju.NewAPIClientFromName("local")
+func (c *LYAPluginCommand) Info(envName string) error {
+	client, err := juju.NewAPIClientFromName(envName)
 	if err != nil {
 		panic(err)
 	}
@@ -37,5 +35,5 @@ func main() {
 	fmt.Printf("Using JUJU_HOME: (%s)\n", osenv.JujuHome())
 	fmt.Println("Grabbing State information.")
 	c := &LYAPluginCommand{}
-	c.Info()
+	c.Info("local")
 }
