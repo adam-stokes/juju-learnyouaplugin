@@ -20,6 +20,7 @@ func (c *LYAPluginCommand) Info(envName string) error {
 	if err != nil {
 		panic(err)
 	}
+	defer client.Close()
 	info, err := client.EnvironmentInfo()
 	fmt.Printf("Connection (%s): (%s)\n", info.UUID, info.Name)
 	return nil
