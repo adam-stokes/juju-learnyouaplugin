@@ -30,7 +30,11 @@ func (c *LYAPluginCommand) Info(envName string) error {
 		panic(err)
 	}
 	for _, m := range status.Machines {
-		fmt.Printf("Found machine (%s)", m.Id)
+		fmt.Printf("Found machine (%s)\n", m.Id)
+	}
+
+	for _, n := range status.Services {
+		fmt.Printf("Service: (%s)", n.Charm)
 	}
 	return nil
 }
