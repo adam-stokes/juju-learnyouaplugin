@@ -29,10 +29,18 @@ type LYAPluginCommand struct {
 	services []string
 	units    []string
 	commands string
+	envName string
 	description bool
 }
 
-var doc = "Run a command on target machine(s)"
+var doc = `Run a command on target machine(s)
+
+This example plugin mimics what "juju run" does.
+
+eg.
+
+juju lyaplugin -m 1 -e local "touch /tmp/testfile"
+`
 
 func (c *LYAPluginCommand) Info() *cmd.Info {
 	return &cmd.Info{
@@ -46,6 +54,9 @@ func (c *LYAPluginCommand) Info() *cmd.Info {
 func (c *LYAPluginCommand) SetFlags(f *gnuflag.FlagSet) {
 	f.BoolVar(&c.description, "description", false, "Plugin Description")
 	f.Var(cmd.NewStringsValue(nil, &c.machines), "machine", "one or more machine ids")
+	f.Var(cmd.NewStringsValue(nil, &c.machines), "m", "")
+	f.StringVar(&c.envName, "e", "local", "Juju environment")
+	f.StringVar(&c.envName, "environment", "local", "")
 }
 
 func (c *LYAPluginCommand) Init(args []string) error {
@@ -56,9 +67,12 @@ func (c *LYAPluginCommand) Init(args []string) error {
 	if len(args) == 0 {
 		return fmt.Errorf("no commands specified")
 	}
+	if c.envName == "" {
+		return fmt.Errorf("Juju environment must be specified.")
+	}
 	c.commands, args = args[0], args[1:]
 	if len(c.machines) == 0 {
-		return fmt.Errorf("You must specify a target with --machine")
+		return fmt.Errorf("You must specify a target with --machine, -m")
 	}
 
 	for _, machineId := range c.machines {
@@ -70,14 +84,10 @@ func (c *LYAPluginCommand) Init(args []string) error {
 }
 
 func (c *LYAPluginCommand) Run(ctx *cmd.Context) error {
-	envName, err := envcmd.GetDefaultEnvironment()
-	if err != nil {
-		return fmt.Errorf("could not get default environment (%s)", err)
-	}
-	c.SetEnvName(envName)
+	c.SetEnvName(c.envName)
 	client, err := c.NewAPIClient()
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("Failed to load api client: %s", err)
 	}
 	defer client.Close()
 
@@ -95,8 +105,9 @@ func (c *LYAPluginCommand) Run(ctx *cmd.Context) error {
 	if err != nil {
 		fmt.Errorf("An error occurred: %s", err)
 	}
-	for _, result := range runResults {
-		logger.Infof("Run result: (%d) (%s) (%s)", result.Code, result.Stdout, result.Stderr)
+	if len(runResults) == 1 {
+		result := runResults[0]
+		logger.Infof("Result: out(%s), err(%s), code(%d)", result.Stdout, result.Stderr, result.Code)
 	}
 	return nil
 }
