@@ -29,6 +29,7 @@ type LYAPluginCommand struct {
 	services []string
 	units    []string
 	commands string
+	description bool
 }
 
 var doc = "Run a command on target machine(s)"
@@ -43,10 +44,15 @@ func (c *LYAPluginCommand) Info() *cmd.Info {
 }
 
 func (c *LYAPluginCommand) SetFlags(f *gnuflag.FlagSet) {
+	f.BoolVar(&c.description, "description", false, "Plugin Description")
 	f.Var(cmd.NewStringsValue(nil, &c.machines), "machine", "one or more machine ids")
 }
 
 func (c *LYAPluginCommand) Init(args []string) error {
+	if c.description {
+		fmt.Println(doc)
+		os.Exit(0)
+	}
 	if len(args) == 0 {
 		return fmt.Errorf("no commands specified")
 	}
