@@ -23,13 +23,13 @@ var logger = loggo.GetLogger("juju.plugin.lyaplugin")
 // and a map of known machines from juju's status
 type LYAPluginCommand struct {
 	envcmd.EnvCommandBase
-	out      cmd.Output
-	timeout  time.Duration
-	machines []string
-	services []string
-	units    []string
-	commands string
-	envName string
+	out         cmd.Output
+	timeout     time.Duration
+	machines    []string
+	services    []string
+	units       []string
+	commands    string
+	envName     string
 	description bool
 }
 
